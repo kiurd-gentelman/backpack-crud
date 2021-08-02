@@ -51,7 +51,7 @@ class ProductCrudController extends CrudController
         $this->crud->addFilter([
             'type' => 'select2',
             'name' => 'category_id',
-            'label' => 'Filter',
+            'label' => 'Category Filter',
             'ajax' => true,
         ],
             function() {
@@ -72,14 +72,22 @@ class ProductCrudController extends CrudController
             'visibleInModal' => true,
         ]);
         CRUD::addColumn([
-            // 1-n relationship
             'label'          => 'Category', // Table column heading
-            'type'           => 'select',
+            'type'           => 'relationship',
             'name'           => 'category_id', // the column that contains the ID of that connected entity;
             'entity'         => 'category', // the method that defines the relationship in your Model
             'attribute'      => 'name', // foreign key attribute that is shown to user
             'visibleInTable' => true,
-            'visibleInModal' => false,
+            'visibleInModal' => true,
+        ]);
+        CRUD::addColumn([
+            'label'          => 'Brand', // Table column heading
+            'type'           => 'relationship',
+            'name'           => 'brand_id', // the column that contains the ID of that connected entity;
+            'entity'         => 'brand', // the method that defines the relationship in your Model
+            'attribute'      => 'name', // foreign key attribute that is shown to user
+            'visibleInTable' => true,
+            'visibleInModal' => true,
         ]);
 //        CRUD::setFromDb(); // columns
 
