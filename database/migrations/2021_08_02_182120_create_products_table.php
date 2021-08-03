@@ -23,6 +23,7 @@ class CreateProductsTable extends Migration
             $table->integer('category_id');
             $table->integer('sub_category_id');
             $table->json('extras')->nullable();
+            $table->json('variant')->nullable();
             $table->timestamps();
         });
     }

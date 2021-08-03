@@ -28,11 +28,6 @@ class ProductCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\BulkDeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\BulkCloneOperation;
 
-    /**
-     * Configure the CrudPanel object. Apply settings to all operations.
-     *
-     * @return void
-     */
     public function setup()
     {
         CRUD::setModel(\App\Models\Product::class);
@@ -40,12 +35,6 @@ class ProductCrudController extends CrudController
         CRUD::setEntityNameStrings('product', 'products');
     }
 
-    /**
-     * Define what happens when the List operation is loaded.
-     *
-     * @see  https://backpackforlaravel.com/docs/crud-operation-list-entries
-     * @return void
-     */
     protected function setupListOperation()
     {
         $this->crud->addFilter([
@@ -53,17 +42,28 @@ class ProductCrudController extends CrudController
             'name' => 'category_id',
             'label' => 'Category Filter',
             'ajax' => true,
-        ],
-            function() {
+        ],function() {
                 return Category:: whereIn('id' , Product::select('category_id')->distinct()->get()->pluck('category_id')->toArray())->get()->pluck('name' , 'id')->toArray();
             },
             function($value) {
-
 //            dd($value);
                 $this->crud->addClause('where', 'category_id', $value);
+        });
+
+        $this->crud->addFilter([
+            'type' => 'select2',
+            'name' => 'brand_id',
+            'label' => 'Brand Filter',
+            'ajax' => true,
+        ],function() {
+            return Brand:: whereIn('id' , Product::select('brand_id')->distinct()->get()->pluck('brand_id')->toArray())->get()->pluck('name' , 'id')->toArray();
+        },
+            function($value) {
+//            dd($value);
+                $this->crud->addClause('where', 'brand_id', $value);
             });
 
-        CRUD::addColumns(['name', 'description']); // add multiple columns, at the end of the stack
+        CRUD::addColumns(['name', 'description']);
         CRUD::addColumn([
             'name'           => 'price',
             'type'           => 'number',
@@ -72,38 +72,36 @@ class ProductCrudController extends CrudController
             'visibleInModal' => true,
         ]);
         CRUD::addColumn([
-            'label'          => 'Category', // Table column heading
+            'label'          => 'Category',
             'type'           => 'relationship',
-            'name'           => 'category_id', // the column that contains the ID of that connected entity;
-            'entity'         => 'category', // the method that defines the relationship in your Model
-            'attribute'      => 'name', // foreign key attribute that is shown to user
+            'name'           => 'category_id',
+            'entity'         => 'category',
+            'attribute'      => 'name',
             'visibleInTable' => true,
             'visibleInModal' => true,
         ]);
         CRUD::addColumn([
-            'label'          => 'Brand', // Table column heading
+            'label'          => 'Brand',
             'type'           => 'relationship',
-            'name'           => 'brand_id', // the column that contains the ID of that connected entity;
-            'entity'         => 'brand', // the method that defines the relationship in your Model
-            'attribute'      => 'name', // foreign key attribute that is shown to user
+            'name'           => 'brand_id',
+            'entity'         => 'brand',
+            'attribute'      => 'name',
+            'visibleInTable' => true,
+            'visibleInModal' => true,
+        ]);
+        CRUD::addColumn([
+            'label'          => 'Sub-category',
+            'type'           => 'relationship',
+            'name'           => 'sub_category_id',
+            'entity'         => 'subCategory',
+            'attribute'      => 'name',
             'visibleInTable' => true,
             'visibleInModal' => true,
         ]);
 //        CRUD::setFromDb(); // columns
 
-        /**
-         * Columns can be defined using the fluent syntax or array syntax:
-         * - CRUD::column('price')->type('number');
-         * - CRUD::addColumn(['name' => 'price', 'type' => 'number']);
-         */
     }
 
-    /**
-     * Define what happens when the Create operation is loaded.
-     *
-     * @see https://backpackforlaravel.com/docs/crud-operation-create
-     * @return void
-     */
     protected function setupCreateOperation()
     {
         CRUD::setValidation(ProductRequest::class);
@@ -183,8 +181,8 @@ class ProductCrudController extends CrudController
                 'name' => 'Feature',
                 'desc' => 'Value',
             ],
-            'max' => 25, // maximum rows allowed in the table
-            'min' => 0, // minimum rows allowed in the table
+            'max' => 50,
+            'min' => 0,
             'tab' => 'Primary Info',
         ]);
 
@@ -192,7 +190,7 @@ class ProductCrudController extends CrudController
             'name'            => 'extra_features',
             'label'           => 'Extra Features',
             'type'            => 'table',
-            'entity_singular' => 'extra feature', // used on the "Add X" button
+            'entity_singular' => 'extra feature',
             'columns'         => [
                 'name' => 'Feature',
                 'desc' => 'Value',
@@ -205,7 +203,7 @@ class ProductCrudController extends CrudController
 
 
 
-        CRUD::addField([   // Number
+        CRUD::addField([
             'name'  => 'price',
             'label' => 'Price',
             'type'  => 'number',
@@ -218,25 +216,28 @@ class ProductCrudController extends CrudController
             //  ], // extra HTML attributes for the field wrapper - mostly for resizing fields
             'tab' => 'Basic Info',
         ]);
+//        CRUD::addField([ // Table
+//            'name'            => 'variant',
+//            'label'           => 'Variant',
+//            'type'            => 'table',
+//            'entity_singular' => 'variant',
+//            'columns'         => [
+//                'name' => 'Variant',
+//                'desc' => 'Value',
+//                'price' => 'Price',
+//            ],
+//            'fake' => true,
+//            'max'  => 25, // maximum rows allowed in the table
+//            'min'  => 0, // minimum rows allowed in the table
+//            'tab'  => 'Basic Info',
+//        ]);
 
 
         $this->crud->setOperationSetting('contentClass', 'col-md-12');
 
 //        CRUD::setFromDb(); // fields
-
-        /**
-         * Fields can be defined using the fluent syntax or array syntax:
-         * - CRUD::field('price')->type('number');
-         * - CRUD::addField(['name' => 'price', 'type' => 'number']));
-         */
     }
 
-    /**
-     * Define what happens when the Update operation is loaded.
-     *
-     * @see https://backpackforlaravel.com/docs/crud-operation-update
-     * @return void
-     */
     protected function setupUpdateOperation()
     {
         $this->setupCreateOperation();

@@ -19,7 +19,7 @@ class Product extends Model
     // protected $primaryKey = 'id';
     // public $timestamps = false;
     protected $guarded = ['id'];
-    // protected $fillable = [];
+//     protected $fillable = ['variant'];
     // protected $hidden = [];
     // protected $dates = [];
 
@@ -39,7 +39,7 @@ class Product extends Model
         return $this->belongsTo(Category::class,'category_id');
     }
     public function subCategory(){
-        return $this->belongsTo(Category::class,'category_id');
+        return $this->belongsTo(SubCategory::class,'category_id');
     }
     public function brand(){
         return $this->belongsTo(Brand::class,'category_id');

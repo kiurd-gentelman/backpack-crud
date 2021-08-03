@@ -46,7 +46,7 @@ class SubCategoryCrudController extends CrudController
     {
         CRUD::addColumns(['name', 'slug']);
         CRUD::addColumn([
-            'label'          => 'Category', // Table column heading
+            'label'          => 'Category', // Table coplumn heading
             'type'           => 'relationship',
             'name'           => 'category_id', // the column that contains the ID of that connected entity;
             'entity'         => 'category', // the method that defines the relationship in your Model
