@@ -35,6 +35,10 @@ class Category extends Model
     |--------------------------------------------------------------------------
     */
 
+    public function subCategory(){
+        return $this->hasMany(SubCategory::class,'category_id','id');
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES
