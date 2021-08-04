@@ -19,5 +19,9 @@ Route::group([
 
     Route::crud('sub-category', 'SubCategoryCrudController');
     Route::crud('product', 'ProductCrudController');
+
+    Route::get('sub_category/{id}', 'CategoryCrudController@category_by_sub_category')->name('filter_sub_category');
+
+
     Route::get('charts/weekly-users', 'Charts\WeeklyUsersChartController@response')->name('charts.weekly-users.index');
 }); // this should be the absolute last line of this file

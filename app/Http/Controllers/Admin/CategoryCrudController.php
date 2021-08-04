@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Requests\CategoryRequest;
+use App\Models\Category;
+use App\Models\SubCategory;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 
@@ -37,13 +39,39 @@ class CategoryCrudController extends CrudController
      * @see  https://backpackforlaravel.com/docs/crud-operation-list-entries
      * @return void
      */
+
+    public function category_by_sub_category($id){
+        return SubCategory::where('id', $id)->get();
+//        CRUD::setFromDb();
+    }
+
     protected function setupListOperation()
     {
 
+        CRUD::column('select')
+            ->type('select')
+            ->entity('subCategory')
+            ->attribute('name')
+            ->model(Category::class)
+            ->wrapper([
+                'href' => function ($crud, $column, $entry, $related_key) {
+                    return backpack_url('sub_category/'.$related_key);
+                },
+            ]);
 
         $this->crud->addColumn([
             'label' => 'Name',
             'name' => 'name',
+            'wrapper' => [
+                'href' => function ($crud, $column, $entry, $related_key) {
+//                    dump($entry);
+                    return backpack_url('sub_category/'.$entry->id);
+                },]
+        ]);
+        $this->crud->addColumn([
+            'label' => 'Other',
+            'name' => 'action',
+            'type' => 'button'
         ]);
         $this->crud->addColumn([
             'label' => 'Slug',
@@ -54,6 +82,25 @@ class CategoryCrudController extends CrudController
             'name' => 'image',
             'type' => 'image',
         ]);
+
+        //Badge add in to list
+        CRUD::column('checkbox')
+            ->type('boolean')
+            ->label('Boolean')
+            ->options([0 => 'Yes', 1 => 'No'])
+            ->wrapper([
+                'element' => 'span',
+                'class'   => static function ($crud, $column, $entry) {
+                    return 'badge badge-'.($entry->{$column['name']} ? 'default' : 'success');
+                },
+            ]);
+
+        CRUD::column('checkbox')->key('check')->label('Agreed')->type('check');
+        CRUD::column('created_at')->type('closure')->label('Created At')->function(function ($entry) {
+            return 'Created on '.$entry->created_at;
+        });
+        $this->crud->addButton('line', 'open_google', 'openGoogle', 'beginning');
+        $this->crud->addButtonFromModelFunction('line', 'open_google', 'openGoogle', 'beginning');
 //        CRUD::setFromDb(); // columns
 
         /**

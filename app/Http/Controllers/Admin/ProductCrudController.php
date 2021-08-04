@@ -6,9 +6,11 @@ use App\Http\Requests\ProductRequest;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImages;
 use App\Models\SubCategory;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use function PHPUnit\Framework\isNan;
 
 /**
  * Class ProductCrudController
@@ -37,6 +39,32 @@ class ProductCrudController extends CrudController
 
     protected function setupListOperation()
     {
+        CRUD::addColumn([   // Wysiwyg
+            'name'  => 'images',
+            'label' => 'Image',
+            'type'  => 'closure',
+            'function' =>
+                static function($entry) {
+//                    dump($entry->product_images);
+                    $html = '';
+                    $html .= '<div class="row">';
+                    foreach ($entry->product_images as $image){
+
+                        $html .=  '         <div class="col-md-2 col-4">';
+                        $html .=  '            <div class="thumbnail">';
+                        $html .=  '               <a href="'.route('image-delete',$image->id).'">';
+                        $html .=  '                    <img src="'.asset($image->image_path).'" alt="Lights" style="width:30%">';
+                        $html .=  '                   <div class="caption">';
+                        $html .=  '                       <p class="text-danger">Delete</p>';
+                        $html .=  '                  </div>';
+                        $html .=  '              </a>';
+                        $html .=  '          </div>';
+                        $html .=  '     </div>';
+                    }
+                    $html .= '</div>';
+                    return $html;
+            }
+        ]);
         $this->crud->addFilter([
             'type' => 'select2',
             'name' => 'category_id',
@@ -109,62 +137,79 @@ class ProductCrudController extends CrudController
     {
         CRUD::setValidation(ProductRequest::class);
 
-        CRUD::addField([ // Text
+        CRUD::addField([   // Wysiwyg
             'name'  => 'name',
             'label' => 'Name',
             'type'  => 'text',
             'tab'   => 'Primary Info',
         ]);
-        CRUD::addField([   // relationship
-            'type' => "relationship",
-            'name' => 'category', // the method on your model that defines the relationship
-            'ajax' => true,
 
-            // OPTIONALS:
-             'label' => "Category",
-             'attribute' => "name", // foreign key attribute that is shown to user (identifiable attribute)
-             'entity' => 'category', // the method that defines the relationship in your Model
-             'model' => Category::class, // foreign key Eloquent model
-             'placeholder' => "Select a category", // placeholder for the select2 input
-
-            // AJAX OPTIONALS:
-             'delay' => 500, // the minimum amount of time between ajax requests when searching in the field
-             'data_source' => url("fetch/category"), // url to controller search function (with /{id} should return model)
-             'minimum_input_length' => 2, // minimum characters to type before querying results
-             'dependencies'         => ['category'], // when a dependency changes, this select2 is reset to null
-             'include_all_form_fields'  => false, // optional - only send the current field through AJAX (for a smaller payload if you're not using multiple chained select2s)
-        ],);
-
-        CRUD::addField([ // Text
-          // two interconnected entities
-            'label'             => 'Category',
-            'field_unique_name' => 'user_role_permission',
-            'type'              => 'checklist_dependency',
-            'name'              => ['category', 'subCategory'], // the methods that define the relationship in your Models
-            'subfields'         => [
-                'primary' => [
-                    'label'            => 'Category',
-                    'name'             => 'category', // the method that defines the relationship in your Model
-                    'entity'           => 'category', // the method that defines the relationship in your Model
-                    'entity_secondary' => 'subCategory', // the method that defines the relationship in your Model
-                    'attribute'        => 'name', // foreign key attribute that is shown to user
-                    'model'            => Category::class, // foreign key model
-                    'pivot'            => true, // on create&update, do you need to add/delete pivot table entries?]
-                    'number_columns'   => 3, //can be 1,2,3,4,6
-                ],
-                'secondary' => [
-                    'label'          => 'Sub Category',
-                    'name'           => 'subCategory', // the method that defines the relationship in your Model
-                    'entity'         => 'subCategory', // the method that defines the relationship in your Model
-                    'entity_primary' => 'category', // the method that defines the relationship in your Model
-                    'attribute'      => 'name', // foreign key attribute that is shown to user
-                    'model'          => SubCategory::class, // foreign key model
-                    'pivot'          => true, // on create&update, do you need to add/delete pivot table entries?]
-                    'number_columns' => 3, //can be 1,2,3,4,6
-                ],
-            ],
+        CRUD::addField([   // Browse multiple
+            'name'          => 'images',
+            'label'         => 'Images',
+            'type'          => 'browse_multiple',
+            'tab'   => 'Primary Info',
+            'upload' => true,
+            'multiple'   => true, // enable/disable the multiple selection functionality
+            'sortable'   => false, // enable/disable the reordering with drag&drop
+            // 'mime_types' => null, // visible mime prefixes; ex. ['image'] or ['application/pdf']
 
         ]);
+
+        $this->crud->addField([    // SELECT2
+            'label'         => 'Category',
+            'type'          => 'select',
+            'name'          => 'category_id',
+            'entity'        => 'category',
+            'attribute'     => 'name',
+            'tab'   => 'Primary Info'
+        ]);
+        $this->crud->addField([ // select2_from_ajax: 1-n relationship
+            'label'                => "Sub Category", // Table column heading
+            'type'                 => 'select2_from_ajax',
+            'name'                 => 'sub_category_id', // the column that contains the ID of that connected entity;
+            'entity'               => 'subCategory', // the method that defines the relationship in your Model
+            'attribute'            => 'name', // foreign key attribute that is shown to user
+            'data_source'          => url('api/article'), // url to controller search function (with /{id} should return model)
+            'placeholder'          => 'Select an article', // placeholder for the select
+            'minimum_input_length' => 0, // minimum characters to type before querying results
+            'dependencies'         => ['category'], // when a dependency changes, this select2 is reset to null
+            'include_all_form_fields' => true,
+            'method'                    => 'GET', // optional - HTTP method to use for the AJAX call (GET, POST)
+            'tab'   => 'Primary Info'
+        ]);
+
+
+//        CRUD::addField([ // Text
+//          // two interconnected entities
+//            'label'             => 'Category',
+//            'field_unique_name' => 'category_sub_category',
+//            'type'              => 'checklist_dependency',
+//            'name'              => ['category', 'subCategory'], // the methods that define the relationship in your Models
+//            'subfields'         => [
+//                'primary' => [
+//                    'label'            => 'Category',
+//                    'name'             => 'category', // the method that defines the relationship in your Model
+//                    'entity'           => 'category', // the method that defines the relationship in your Model
+//                    'entity_secondary' => 'subCategory', // the method that defines the relationship in your Model
+//                    'attribute'        => 'name', // foreign key attribute that is shown to user
+//                    'model'            => Category::class, // foreign key model
+//                    'pivot'            => true, // on create&update, do you need to add/delete pivot table entries?]
+//                    'number_columns'   => 3, //can be 1,2,3,4,6
+//                ],
+//                'secondary' => [
+//                    'label'          => 'Sub Category',
+//                    'name'           => 'subCategory', // the method that defines the relationship in your Model
+//                    'entity'         => 'subCategory', // the method that defines the relationship in your Model
+//                    'entity_primary' => 'category', // the method that defines the relationship in your Model
+//                    'attribute'      => 'name', // foreign key attribute that is shown to user
+//                    'model'          => SubCategory::class, // foreign key model
+//                    'pivot'          => true, // on create&update, do you need to add/delete pivot table entries?]
+//                    'number_columns' => 3, //can be 1,2,3,4,6
+//                ],
+//            ],
+//
+//        ]);
         CRUD::addField([   // Textarea
             'name'  => 'description',
             'label' => 'Description',
@@ -178,16 +223,16 @@ class ProductCrudController extends CrudController
             'type'  => 'wysiwyg',
             'tab'   => 'Primary Info',
         ]);
-        $this->crud->addField([
-            'label' => 'Category',
-            'type' => 'relationship',
-            'name' => 'category_id',
-            'entity' => 'category',
-            'attribute' => 'name',
-            /*'inline_create' => true,*/
-            'ajax' => true,
-            'tab'   => 'Primary Info',
-        ]);
+//        $this->crud->addField([
+//            'label' => 'Category',
+//            'type' => 'relationship',
+//            'name' => 'category_id',
+//            'entity' => 'category',
+//            'attribute' => 'name',
+//            /*'inline_create' => true,*/
+//            'ajax' => true,
+//            'tab'   => 'Primary Info',
+//        ]);
 
         $this->crud->addField([
             'label' => 'Brand',
@@ -200,16 +245,16 @@ class ProductCrudController extends CrudController
             'tab'   => 'Primary Info',
         ]);
 
-        $this->crud->addField([
-            'label' => 'Sub Category',
-            'type' => 'relationship',
-            'name' => 'sub_category_id',
-            'entity' => 'subCategory',
-            'attribute' => 'name',
-            /*'inline_create' => true,*/
-            'ajax' => true,
-            'tab'   => 'Primary Info',
-        ]);
+//        $this->crud->addField([
+//            'label' => 'Sub Category',
+//            'type' => 'relationship',
+//            'name' => 'sub_category_id',
+//            'entity' => 'subCategory',
+//            'attribute' => 'name',
+//            /*'inline_create' => true,*/
+//            'ajax' => true,
+//            'tab'   => 'Primary Info',
+//        ]);
 
         CRUD::addField([ // Table
             'name'            => 'features',
@@ -279,6 +324,7 @@ class ProductCrudController extends CrudController
 
     protected function setupUpdateOperation()
     {
+
         $this->setupCreateOperation();
     }
 
@@ -407,5 +453,46 @@ class ProductCrudController extends CrudController
 
         // load the view from /resources/views/vendor/backpack/crud/ if it exists, otherwise load the one in the package
         return view($this->crud->getShowView(), $this->data);
+    }
+
+    public function update()
+    {
+
+        $this->crud->hasAccessOrFail('update');
+
+        // execute the FormRequest authorization and validation, if one is required
+        $request = $this->crud->validateRequest();
+        // update the row in the db
+//        dump($this->crud->getStrippedSaveRequest()['images']);
+        $res = str_replace( '\"', '"', $this->crud->getStrippedSaveRequest()['images']);
+
+        $res2 = str_replace( '"[', '[', $res);
+        $res3 = str_replace( ']"', ']', $res2);
+        $res4 = str_replace( '\\\\', '\\', $res3);
+        $this->crud->getStrippedSaveRequest()['images'] = $res4;
+
+        $v = json_decode($this->crud->getStrippedSaveRequest()['images'] , true);
+
+
+        // show a success message
+        \Alert::success(trans('backpack::crud.update_success'))->flash();
+//        dd(empty($v));
+        // save the redirect choice for next time
+        $this->crud->setSaveAction();
+
+        $item = $this->crud->update($request->get($this->crud->model->getKeyName()), $this->crud->getStrippedSaveRequest());
+        $this->data['entry'] = $this->crud->entry = $item;
+//        dd($v);
+
+        if (!empty($v)){
+            foreach ( $v as $image){
+                $product_image = new ProductImages();
+                $product_image->product_id = $item->getKey();
+                $product_image->image_path = $image;
+                $product_image->save();
+            }
+        }
+
+        return $this->crud->performSaveAction($item->getKey());
     }
 }

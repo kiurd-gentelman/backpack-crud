@@ -56,7 +56,7 @@ class SubCategoryCrudController extends CrudController
             'name' => 'category_id',
             'entity' => 'category',
             'attribute' => 'name',
-            /*'inline_create' => true,*/
+            'inline_create' => true,
             'model' => Category::class,
             'ajax' => true,
         ]);

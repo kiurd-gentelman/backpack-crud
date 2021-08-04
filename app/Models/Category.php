@@ -38,6 +38,10 @@ class Category extends Model
     public function subCategory(){
         return $this->hasMany(SubCategory::class,'category_id','id');
     }
+    public function openGoogle($crud = false)
+    {
+        return '<a class="btn btn-sm btn-link" target="_blank" href="http://google.com?q='.urlencode($this->name).'" data-toggle="tooltip" title="Just a demo custom button."><i class="fa fa-search"></i> Google it</a>';
+    }
 
     /*
     |--------------------------------------------------------------------------

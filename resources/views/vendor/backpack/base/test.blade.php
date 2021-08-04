@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-md-12">
 
-            @dump($entry)
+{{--            @dump($entry)--}}
             <small>Use the <span class="label label-default">details_row</span> functionality to show more information about the entry, when that information does not fit inside the table column.</small><br><br>
             <strong>Name:</strong> {{ $entry->name }} <br>
             <strong>Description:</strong> {{ $entry->description }} <br>
@@ -16,3 +16,28 @@
     </div>
 </div>
 <div class="clearfix"></div>
+
+{{--<div>--}}
+{{--    <div>--}}
+{{--        <img class="img-thumbnail" src="'.asset($image->image_path).'" width="10%">--}}
+{{--    </div>--}}
+
+{{--   --}}
+{{--</div>--}}
+
+{{--<figure class="figure">--}}
+{{--    <img src="'.asset($image->image_path).'" class="figure-img img-fluid rounded" alt="A generic square placeholder image with rounded corners in a figure.">--}}
+{{--    <figcaption class="figure-caption"> <a href="'.route('image-delete',$image->id).'" class="btn btn-sm btn-success">test</a></figcaption>--}}
+{{--</figure>--}}
+<div class="row">
+    <div class="col-md-4">
+        <div class="thumbnail">
+            <a href="/w3images/lights.jpg">
+                <img src="/w3images/lights.jpg" alt="Lights" style="width:100%">
+                <div class="caption">
+                    <p>Lorem ipsum...</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
