@@ -59,15 +59,30 @@ class CategoryCrudController extends CrudController
                 },
             ]);
 
-        $this->crud->addColumn([
-            'label' => 'Name',
-            'name' => 'name',
-            'wrapper' => [
-                'href' => function ($crud, $column, $entry, $related_key) {
-//                    dump($entry);
-                    return backpack_url('sub_category/'.$entry->id);
-                },]
-        ]);
+//        $this->crud->addColumn([
+//            'label'          => 'Category',
+//            'type'           => 'relationship',
+//            'name'           => 'category_id',
+//            'entity'         => 'category',
+//            'attribute'      => 'name',
+//            'wrapper' => [
+//                'href' => function ($crud, $column, $entry, $related_key) {
+////                    dump($entry);
+//                    return backpack_url('sub-category?category_id='.$entry->id);
+//                },]
+//        ]);
+//        CRUD::addColumn([   // select_multiple: n-n relationship (with pivot table)
+//            'label'     => 'Category', // Table column heading
+//            'type'      => 'relationship',
+//            'name'      => 'category', // the method that defines the relationship in your Model
+//            'wrapper'   => [
+//                'href' => function ($crud, $column, $entry, $related_key) {
+//                    return backpack_url('sub-category?category_id='.$entry->getKey());
+//                },
+//            ],
+//        ]);
+
+
         $this->crud->addColumn([
             'label' => 'Other',
             'name' => 'action',

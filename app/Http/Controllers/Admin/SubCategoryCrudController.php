@@ -31,6 +31,18 @@ class SubCategoryCrudController extends CrudController
         CRUD::setEntityNameStrings('sub category', 'sub categories');
     }
 
+    public function index()
+    {
+        $this->crud->hasAccessOrFail('list');
+
+//        dd($this->crud);
+        $this->data['crud'] = $this->crud;
+        $this->data['title'] = $this->crud->getTitle() ?? mb_ucfirst($this->crud->entity_name_plural);
+
+        // load the view from /resources/views/vendor/backpack/crud/ if it exists, otherwise load the one in the package
+        return view($this->crud->getListView(), $this->data);
+    }
+
     protected function setupListOperation()
     {
         CRUD::addColumns(['name', 'slug']);
