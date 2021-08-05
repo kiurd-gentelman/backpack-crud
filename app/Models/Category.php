@@ -43,6 +43,11 @@ class Category extends Model
         return '<a class="btn btn-sm btn-link" target="_blank" href="http://google.com?q='.urlencode($this->name).'" data-toggle="tooltip" title="Just a demo custom button."><i class="fa fa-search"></i> Google it</a>';
     }
 
+    public function showImage(){
+//        dd($this->image);
+        return asset($this->image);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | SCOPES

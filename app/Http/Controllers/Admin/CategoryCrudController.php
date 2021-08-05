@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\SubCategory;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use http\Env\Request;
 
 /**
  * Class CategoryCrudController
@@ -136,10 +137,118 @@ class CategoryCrudController extends CrudController
         CRUD::setValidation(CategoryRequest::class);
 
 
+//        $this->crud->addField([
+//            'label' => 'Image',
+//            'name' => 'image',
+//            'type' => 'browse',
+//        ]);
+        $this->crud->addField([   // Address algolia
+            'name'          => 'address',
+            'label'         => 'Address',
+            'type'          => 'address_algolia',
+            // optional
+            'store_as_json' => true
+        ]);
+
         $this->crud->addField([
-            'label' => 'Image',
-            'name' => 'image',
-            'type' => 'browse',
+            'label'        => "Image",
+            'name'         => "image",
+            'filename'     => "image_filename", // set to null if not needed
+            'type'         => 'base64_image',
+            'aspect_ratio' => 1, // set to 0 to allow any aspect ratio
+            'crop'         => true, // set to true to allow cropping, false to disable
+            'src'          => 'showImage', // null to read straight from DB, otherwise set to model accessor function
+        ]);
+
+        $this->crud->addField([   // Address google
+            'name'          => 'addressghdfh',
+            'label'         => 'Addressdhfdghfgh',
+            'type'          => 'address_google',
+            // optional
+            'store_as_json' => true
+        ]);
+        $this->crud->addField([   // CustomHTML
+            'name'  => 'action',
+            'type'  => 'custom_html',
+            'value' => '<a href="#" class="btn btn-sm btn-outline-danger" onclick="alert(`gdsgdfgh`)">ami</a>'
+        ]);
+
+        $this->crud->addField([   // URL
+            'name'  => 'link',
+            'label' => 'Link to video file',
+            'type'  => 'url'
+        ]);
+
+        $this->crud->addField([   // repeatable
+            'name'  => 'testimonials',
+            'label' => 'Testimonials',
+            'type'  => 'repeatable',
+            'fields' => [
+                [
+                    'name'    => 'name',
+                    'type'    => 'text',
+                    'label'   => 'Name',
+                    'wrapper' => ['class' => 'form-group col-md-4'],
+                ],
+                [
+                    'name'    => 'position',
+                    'type'    => 'text',
+                    'label'   => 'Position',
+                    'wrapper' => ['class' => 'form-group col-md-4'],
+                ],
+                [
+                    'name'    => 'company',
+                    'type'    => 'text',
+                    'label'   => 'Company',
+                    'wrapper' => ['class' => 'form-group col-md-4'],
+                ],
+                [
+                    'name'  => 'quote',
+                    'type'  => 'ckeditor',
+                    'label' => 'Quote',
+                ],
+            ],
+
+
+
+            // optional
+            'new_item_label'  => 'Add Group', // customize the text of the button
+            'init_rows' => 1, // number of empty rows to be initialized, by default 1
+            'min_rows' => 1, // minimum rows allowed, when reached the "delete" buttons will be hidden
+            'max_rows' => 500, // maximum rows allowed, when reached the "new item" button will be hidden
+
+        ]);
+
+        $this->crud->addField([   // color_picker
+            'label'                => 'Background Color',
+            'name'                 => 'background_color',
+            'type'                 => 'color_picker',
+            'default'              => '#000000',
+
+            // optional
+            // Anything your define inside `color_picker_options` will be passed as JS
+            // to the JavaScript plugin. For more information about the options available
+            // please see the plugin docs at:
+            //  ### https://itsjavi.com/bootstrap-colorpicker/module-options.html
+            'color_picker_options' => [
+                'customClass' => 'custom-class',
+                'horizontal' => true,
+                'extensions' => [
+                    [
+                        'name' => 'swatches', // extension name to load
+                        'options' => [ // extension options
+                            'colors' => [
+                                'primary' => '#337ab7',
+                                'success' => '#5cb85c',
+                                'info' => '#5bc0de',
+                                'warning' => '#f0ad4e',
+                                'danger' => '#d9534f'
+                            ],
+                            'namesAsValues' => false
+                        ]
+                    ]
+                ]
+            ]
         ]);
         CRUD::setFromDb(); // fields
 
@@ -156,6 +265,27 @@ class CategoryCrudController extends CrudController
      * @see https://backpackforlaravel.com/docs/crud-operation-update
      * @return void
      */
+    public function store()
+    {
+        $this->crud->hasAccessOrFail('create');
+
+        // execute the FormRequest authorization and validation, if one is required
+        $request = $this->crud->validateRequest();
+
+dd($request);
+        // insert item in the db
+        $item = $this->crud->create($this->crud->getStrippedSaveRequest());
+        $this->data['entry'] = $this->crud->entry = $item;
+
+        // show a success message
+        \Alert::success(trans('backpack::crud.insert_success'))->flash();
+
+        // save the redirect choice for next time
+        $this->crud->setSaveAction();
+
+        return $this->crud->performSaveAction($item->getKey());
+    }
+
     protected function setupUpdateOperation()
     {
         $this->setupCreateOperation();

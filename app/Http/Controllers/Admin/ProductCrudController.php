@@ -30,6 +30,9 @@ class ProductCrudController extends CrudController
     use \Backpack\CRUD\app\Http\Controllers\Operations\BulkDeleteOperation;
     use \Backpack\CRUD\app\Http\Controllers\Operations\BulkCloneOperation;
 
+    use \Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
+    use \Backpack\CRUD\app\Http\Controllers\Operations\InlineCreateOperation;
+
     public function setup()
     {
         CRUD::setModel(\App\Models\Product::class);
@@ -65,6 +68,21 @@ class ProductCrudController extends CrudController
                     return $html;
             }
         ]);
+        $this->crud->addFilter([
+            'name'  => 'status',
+            'type'  => 'select2_multiple',
+            'label' => 'Status'
+        ], function() {
+            return [
+                1 => 'In stock',
+                2 => 'In provider stock',
+                3 => 'Available upon ordering',
+                4 => 'Not available',
+            ];
+        }, function($values ) {
+            // if the filter is active
+            // $this->crud->addClause('whereIn', 'status', json_decode($values));
+        });
         $this->crud->addFilter([
             'type' => 'select2',
             'name' => 'category_id',
@@ -235,14 +253,15 @@ class ProductCrudController extends CrudController
 //        ]);
 
         $this->crud->addField([
-            'label' => 'Brand',
-            'type' => 'relationship',
-            'name' => 'brand_id',
-            'entity' => 'brand',
-            'attribute' => 'name',
+            'label'          => 'Brand',
+            'type'           => 'relationship',
+            'name'           => 'brand_id',
+            'entity'         => 'brand',
+            'attribute'      => 'name',
+            'visibleInTable' => true,
+            'visibleInModal' => true,
             /*'inline_create' => true,*/
-            'ajax' => true,
-            'tab'   => 'Primary Info',
+            'ajax'          => true,
         ]);
 
 //        $this->crud->addField([
